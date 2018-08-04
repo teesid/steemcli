@@ -11,7 +11,8 @@ let run = (() => {
       meta: {
         theme: options.theme,
         filename,
-        tags: [options.parent].concat(options.tags ? options.tags.split(',') : [])
+        tags: [options.parent].concat(options.tags ? options.tags.split(',') : []),
+        format: options.raw ? 'html' : 'markdown'
       }
     };
 
@@ -28,7 +29,7 @@ let run = (() => {
     }
 
     yield commentAsync(req);
-    return `https://steemit.com/${req.parentPermalink}/@${req.author}/${req.permalink}`;
+    return `/${req.parentPermalink}/@${req.author}/${req.permalink}`;
   });
 
   return function run(_x, _x2, _x3) {
@@ -73,6 +74,17 @@ function commentAsync(params) {
 
 function main() {
   const { filename, input, options } = parseOptions();
+
+  steem.api.setOptions({
+    url: options.url,
+    useAppbaseApi: options.useAppbase
+  });
+  if (options.addressPrefix) {
+    steem.config.set('address_prefix', options.addressPrefix);
+  }
+  if (options.chainId) {
+    steem.config.set('chain_id', options.chainId);
+  }
 
   run(options, input, filename).then(url => {
     if (url) console.log(url);

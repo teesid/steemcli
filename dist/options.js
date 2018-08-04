@@ -21,7 +21,7 @@ function getDefaults(options, filename, input) {
   function getDefaultAuth(options) {
     if (options.wif) return;
     if (!options.username || !options.password) {
-      console.error(chalk.red('Error:') + ' Please set --username, --password, --wip or\n' + 'the $STEEM_USERNAME and $STEEM_PASSWORD environment variables');
+      console.error(chalk.red('Error:') + ' Please set --username, --password, --wif or\n' + 'the $STEEM_USERNAME and $STEEM_PASSWORD environment variables');
       process.exit(1);
     }
     info(chalk.blue('Info:') + ' Generating WIF token for posting');
@@ -53,6 +53,13 @@ function getDefaults(options, filename, input) {
     if (!options.desc) {
       options.desc = input.slice(0, 100);
       info(chalk.blue('Info:') + ' Using content start as the description');
+    }
+  }
+
+  function getDefaultUrl(options) {
+    if (!options.url) {
+      options.url = 'https://api.steemit.com';
+      info(chalk.blue('Info:') + ' Using the default API URL: ' + options.url);
     }
   }
 
@@ -91,6 +98,7 @@ function getDefaults(options, filename, input) {
   getDefaultTitle(options);
   getDefaultLink(options);
   getDefaultDescription(options);
+  getDefaultUrl(options);
 
   return { options, filename, input };
 }
@@ -106,7 +114,26 @@ function getDefaults(options, filename, input) {
  */
 
 function parseOptions(argv) {
-  program.usage('[options] <file>').version(packageJson.version).option('-t,--title <title>', 'The title for your post').option('-d,--description <desc>', 'A short description for your post').option('-p,--parent <parent>', 'The parent post for this post, defaults to steembin').option('-w,--watch', 'Start a live-reloading preview for this post').option('-n,--noopen', 'When used with watch, prevent opening the preview').option('-l,--link <link>', 'The post\'s permalink').option('-r,--raw', 'If not specified, steembin will try to generate a markdown wrapper for your content').option('-v,--verbose', 'Be verbose').option('--parent-author <parentAuthor>', 'The author of parent post for this post').option('--username <username>', 'Your Steem username').option('--password <password>', 'Your Steem password').option('--wif <wif>', 'A Steem \'posting\' WIF token').option('--theme <theme>', 'Which theme to use for your post').option('--tags <tags>', 'Comma separated list of tags').parse(argv || process.argv);
+    program.usage('[options] <file>').version(packageJson.version)
+        .option('-t,--title <title>', 'The title for your post')
+        .option('-d,--description <desc>', 'A short description for your post')
+        .option('-p,--parent <parent>', 'The parent post for this post, defaults to steembin')
+        .option('-w,--watch', 'Start a live-reloading preview for this post')
+        .option('-n,--noopen', 'When used with watch, prevent opening the preview')
+        .option('-l,--link <link>', 'The post\'s permalink')
+        .option('-r,--raw', 'If not specified, steembin will try to generate a markdown wrapper for your content')
+        .option('-a,--use-appbase', 'Use this for appbase release of API servers')
+        .option('-u,--url <url>', 'The API endpoint URL')
+        .option('-v,--verbose', 'Be verbose')
+        .option('--parent-author <parentAuthor>', 'The author of parent post for this post')
+        .option('--username <username>', 'Your Steem username')
+        .option('--password <password>', 'Your Steem password')
+        .option('--wif <wif>', 'A Steem \'posting\' WIF token')
+        .option('--theme <theme>', 'Which theme to use for your post')
+        .option('--tags <tags>', 'Comma separated list of tags')
+        .option('--address-prefix <XXX>', 'Comma separated list of tags')
+        .option('--chain-id <chainId>', 'Comma separated list of tags')
+        .parse(argv || process.argv);
 
   let filename = program.args[0];
   if (!filename) {
@@ -133,7 +160,11 @@ function parseOptions(argv) {
     watch: program.watch,
     description: program.desc,
     title: program.title,
-    tags: program.tags
+    tags: program.tags,
+    useAppbase: program.useAppbase,
+    url: program.url,
+    addressPrefix: program.addressPrefix,
+    chainId: program.chainId
   };
 
   let input;
